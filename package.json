@@ -5,7 +5,7 @@
     "version": "0.0.1",
     "publisher": "robotpy",
     "engines": {
-        "vscode": "^1.25.0"
+        "vscode": "^1.27.0"
     },
     "categories": [
         "Other"
@@ -13,13 +13,8 @@
     "activationEvents": [
         "onLanguage:python",
         "workspaceContains:.wpilib/wpilib_preferences.json",
-        "workspaceContains:build/vscodeconfig.json",
-        "onCommand:wpilibcore.selectCppToolchain",
-        "onCommand:wpilibcore.refreshCppProperties",
-        "onCommand:wpilibcore.startRioLog",
         "onCommand:wpilibcore.openCommandPalette",
         "onCommand:wpilibcore.setTeamNumber",
-        "onCommand:wpilibcore.startTool",
         "onCommand:wpilibcore.deployCode",
         "onCommand:wpilibcore.debugCode",
         "onCommand:wpilibcore.simulateCode",
@@ -28,20 +23,17 @@
         "onCommand:wpilibcore.createCommand",
         "onCommand:wpilibcore.setLanguage",
         "onCommand:wpilibcore.setSkipTests",
-        "onCommand:wpilibcore.setOnline",
         "onCommand:wpilibcore.setStopSimulationOnEntry",
         "onCommand:wpilibcore.setAutoSave",
-        "onCommand:wpilibcore.setStartRioLog",
         "onCommand:wpilibcore.createExample",
         "onCommand:wpilibcore.createTemplate",
-        "onCommand:wpilibcore.cancelTasks",
         "onCommand:wpilibcore.help",
         "onCommand:wpilibcore.upgradeEclipseProject",
         "onCommand:wpilibcore.createNewProject"
     ],
     "main": "./out/extension",
     "license": "BSD-3-Clause",
-    "repository": "https://github.com/thadhouse/vscode-wpilib-python",
+    "repository": "https://github.com/robotpy/vscode-wpilib-python",
     "contributes": {
         "jsonValidation": [
             {
