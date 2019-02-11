@@ -1,5 +1,6 @@
 'use strict';
 
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { ICodeDeployer, IDeployDebugAPI, IPreferencesAPI } from 'vscode-wpilibapi';
 import { PyExecutor } from './executor';
@@ -90,9 +91,22 @@ class SimulateCodeDeployer extends Deployer {
     super(preferences, pyPreferences);
   }
 
-  public async runDeployer(_: number, workspace: vscode.WorkspaceFolder, _source: vscode.Uri | undefined): Promise<boolean> {
-    this.pyPreferences.getPreferences(workspace);
-    return true;
+  public async runDeployer(_: number, workspace: vscode.WorkspaceFolder, source?: vscode.Uri): Promise<boolean> {
+    let file = await this.getFilePath(workspace, source);
+    if (file === undefined) {
+      return false;
+    }
+    if (!path.isAbsolute(file)) {
+      file = path.join(workspace.uri.fsPath, file);
+    }
+
+    return vscode.debug.startDebugging(workspace, {
+      args: ['sim'],
+      name: 'WPILib Python Simulation',
+      program: file,
+      request: 'launch',
+      type: 'python',
+    });
   }
 
   public getDescription(): string {
