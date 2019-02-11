@@ -58,7 +58,7 @@ class DeployCodeDeployer extends Deployer {
     this.pyExecutor = pyExecutor;
   }
 
-  public async runDeployer(_teamNumber: number, workspace: vscode.WorkspaceFolder, source: vscode.Uri | undefined): Promise<boolean> {
+  public async runDeployer(teamNumber: number, workspace: vscode.WorkspaceFolder, source?: vscode.Uri): Promise<boolean> {
     const file = await this.getFilePath(workspace, source);
     if (file === undefined) {
       return false;
@@ -66,7 +66,10 @@ class DeployCodeDeployer extends Deployer {
 
     const prefs = this.preferences.getPreferences(workspace);
 
-    const deploy = [file, 'deploy', `--team=${await prefs.getTeamNumber()}`];
+    const deploy = [file, 'deploy'];
+    if (teamNumber > 0) {
+      deploy.push(`--team=${teamNumber}`);
+    }
 
     if (prefs.getSkipTests()) {
       deploy.push('--skip-tests');
