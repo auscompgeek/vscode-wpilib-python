@@ -4,17 +4,7 @@ import * as vscode from 'vscode';
 import { ICodeDeployer, IDeployDebugAPI, IPreferencesAPI } from 'vscode-wpilibapi';
 import { PyExecutor } from './executor';
 import { PyPreferencesAPI } from './pypreferencesapi';
-
-function getCurrentFileIfPython(): string | undefined {
-  const currentEditor = vscode.window.activeTextEditor;
-  if (currentEditor === undefined) {
-    return undefined;
-  }
-  if (currentEditor.document.fileName.endsWith('.py')) {
-    return currentEditor.document.fileName;
-  }
-  return undefined;
-}
+import { getRunFilePath } from './utilities';
 
 abstract class Deployer implements ICodeDeployer {
   protected readonly preferences: IPreferencesAPI;
@@ -40,22 +30,7 @@ abstract class Deployer implements ICodeDeployer {
   public abstract getDescription(): string;
 
   protected async getFilePath(workspace: vscode.WorkspaceFolder, source?: vscode.Uri): Promise<string | undefined> {
-    let file: string;
-    if (source === undefined) {
-      const cFile = getCurrentFileIfPython();
-      if (cFile !== undefined) {
-        file = cFile;
-      } else {
-        const mFile = await this.pyPreferences.getPreferences(workspace).getMainFile();
-        if (mFile === undefined) {
-          return;
-        }
-        file = mFile;
-      }
-    } else {
-      file = source.fsPath;
-    }
-    return file;
+    return getRunFilePath(this.pyPreferences, workspace, source);
   }
 }
 

@@ -2,6 +2,7 @@
 import * as fs from 'fs';
 import * as timers from 'timers';
 import * as vscode from 'vscode';
+import { PyPreferencesAPI } from './pypreferencesapi';
 
 export function getIsWindows(): boolean {
   const nodePlatform: NodeJS.Platform = process.platform;
@@ -94,4 +95,38 @@ export function promisifyTimer(time: number): Promise<void> {
           resolve();
       }, time);
   });
+}
+
+export function getCurrentFileIfPython(): string | undefined {
+  const currentEditor = vscode.window.activeTextEditor;
+  if (currentEditor === undefined) {
+    return undefined;
+  }
+  if (currentEditor.document.fileName.endsWith('.py')) {
+    return currentEditor.document.fileName;
+  }
+  return undefined;
+}
+
+export async function getRunFilePath(
+  pyPreferences: PyPreferencesAPI,
+  workspace: vscode.WorkspaceFolder,
+  source?: vscode.Uri,
+): Promise<string | undefined> {
+  let file: string;
+  if (source === undefined) {
+    const cFile = getCurrentFileIfPython();
+    if (cFile !== undefined) {
+      file = cFile;
+    } else {
+      const mFile = await pyPreferences.getPreferences(workspace).getMainFile();
+      if (mFile === undefined) {
+        return;
+      }
+      file = mFile;
+    }
+  } else {
+    file = source.fsPath;
+  }
+  return file;
 }
