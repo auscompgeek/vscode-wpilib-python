@@ -36,12 +36,48 @@ abstract class Deployer implements ICodeDeployer {
 }
 
 class DebugCodeDeployer extends Deployer {
-  constructor(preferences: IPreferencesAPI, pyPreferences: PyPreferencesAPI) {
+  private pyExecutor: PyExecutor;
+
+  constructor(preferences: IPreferencesAPI, pyPreferences: PyPreferencesAPI, pyExecutor: PyExecutor) {
     super(preferences, pyPreferences);
+    this.pyExecutor = pyExecutor;
   }
 
-  public async runDeployer(_teamNumber: number, workspace: vscode.WorkspaceFolder, _source: vscode.Uri | undefined): Promise<boolean> {
-    this.pyPreferences.getPreferences(workspace);
+  public async runDeployer(teamNumber: number, workspace: vscode.WorkspaceFolder, source?: vscode.Uri): Promise<boolean> {
+    const file = await this.getFilePath(workspace, source);
+    if (file === undefined) {
+      return false;
+    }
+
+    const prefs = this.preferences.getPreferences(workspace);
+
+    const deploy = [file, 'deploy', '--debug'];
+    if (teamNumber > 0) {
+      deploy.push(`--team=${teamNumber}`);
+    }
+
+    if (prefs.getSkipTests()) {
+      deploy.push('--skip-tests');
+    }
+
+    const result = await this.pyExecutor.pythonRun(deploy, workspace.uri.fsPath, workspace, 'Python Deploy');
+    if (result !== 0) {
+      return false;
+    }
+
+    await vscode.debug.startDebugging(workspace, {
+      host: `roborio-${teamNumber}-frc.local`,
+      name: 'WPILib Python Debug',
+      pathMappings: [
+        {
+          localRoot: workspace.uri.fsPath,
+          remoteRoot: '.',
+        },
+      ],
+      port: 5678,
+      request: 'attach',
+      type: 'python',
+    });
 
     return true;
   }
@@ -128,7 +164,7 @@ export class DebugDeploy {
   ) {
     debugDeployApi.addLanguageChoice('python');
 
-    this.debugDeployer = new DebugCodeDeployer(preferences, pyPreferences);
+    this.debugDeployer = new DebugCodeDeployer(preferences, pyPreferences, pyExecutor);
     this.deployDeployer = new DeployCodeDeployer(preferences, pyPreferences, pyExecutor);
     this.simulator = new SimulateCodeDeployer(preferences, pyPreferences);
 
